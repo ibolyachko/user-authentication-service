@@ -3,32 +3,34 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import configurations from '@/configurations';
 import { AuthModule } from '@/modules/auth/auth.module';
+import { ConfigEnvModule } from '@/modules/config-env/config-env.module';
+import { configEnvSchema } from '@/modules/config-env/config-env.schema';
 import { RedisClientModule } from '@/modules/redis-client/redis-client.module';
-import { User } from '@/modules/user/entities/user.entity';
 import { UserModule } from '@/modules/user/user.module';
+import { ConfigEnvService } from '@/modules/config-env/config-env.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      validate: env => configEnvSchema.parse(env),
       isGlobal: true,
-      load: [configurations],
     }),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
+      imports: [ConfigEnvModule],
+      inject: [ConfigEnvService],
+      useFactory: (configEnvService: ConfigEnvService) => ({
         type: 'postgres',
-        host: configService.get('db_host'),
-        port: configService.get('db_port'),
-        username: configService.get('db_user'),
-        password: configService.get('db_password'),
-        database: configService.get('db_name'),
-        entities: [User],
+        host: configEnvService.get('DB_HOST'),
+        port: configEnvService.get('DB_PORT'),
+        username: configEnvService.get('DB_USER'),
+        password: configEnvService.get('DB_PASSWORD'),
+        database: configEnvService.get('DB_NAME'),
+        autoLoadEntities: true,
         synchronize: true,
       }),
     }),
+    ConfigEnvModule,
     RedisClientModule,
     UserModule,
     AuthModule,

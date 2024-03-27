@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+
+import { ConfigEnvModule } from '@/modules/config-env/config-env.module';
 
 import { RedisClient } from './redis-client';
 import { RedisClientService } from './redis-client.service';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigEnvModule],
   providers: [RedisClient, RedisClientService],
   exports: [RedisClientService],
 })
